@@ -1,6 +1,22 @@
 # epibox Obsidian Integration
 
-This directory contains tools for using epibox with Obsidian.
+This script scans your LaTeX files and displays all epibox environments in Obsidian.
+
+## What does the script do?
+
+1. **Defines box types** - Lists all 6 epibox environments (known, unclear, question, claim, pitfall, epibox) with colors and icons
+
+2. **Creates regex patterns** - Each box type has a pattern to find it in LaTeX files
+
+3. **Queries LaTeX files** - Uses Dataview to find all `.tex` files in your specified folder
+
+4. **Extracts content** - For each file, searches for all box types and extracts:
+   - Title (from the optional argument like `[title=Question: 123]`)
+   - Body text (the content inside the environment)
+
+5. **Displays results** - Creates a table grouped by box type, showing title, preview, and link to the file
+
+In short: It scans your LaTeX files and builds an index of all your epistemic boxes so you can browse them in Obsidian.
 
 ## Option 1: DataviewJS Script
 
