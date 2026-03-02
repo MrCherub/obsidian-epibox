@@ -2,6 +2,26 @@
 
 This script scans your LaTeX files and displays all epibox environments in Obsidian.
 
+## Quick Test - Is DataviewJS Working?
+
+Before using the main script, test if DataviewJS works in your vault:
+
+Create a new note with this code:
+
+````markdown
+```dataviewjs
+dv.paragraph("DataviewJS is working!")
+```
+````
+
+If you see "DataviewJS is working!" displayed (not just as text), DataviewJS is working.
+
+If not:
+1. Go to Settings → Community plugins → Install & enable **Dataview**
+2. Make sure "Enable JavaScript Queries" is ON in Dataview settings
+
+---
+
 ## What does the script do?
 
 1. **Defines box types** - Lists all 6 epibox environments (known, unclear, question, claim, pitfall, epibox) with colors and icons
