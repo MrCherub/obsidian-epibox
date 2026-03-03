@@ -14,7 +14,7 @@ dv.paragraph("DataviewJS is working!")
 ```
 ````
 
-If you see "DataviewJS is working!" displayed (not just as text), DataviewJS is working.
+If you see "DataviewJS is working!" displayed, DataviewJS is working.
 
 If not:
 1. Go to Settings → Community plugins → Install & enable **Dataview**
@@ -22,120 +22,118 @@ If not:
 
 ---
 
-## What does the script do?
+## How it works
 
-1. **Defines box types** - Lists all 6 epibox environments (known, unclear, question, claim, pitfall, epibox) with colors and icons
+1. **Defines box types** - Lists all 5 epibox environments (known, question, claim, pitfall, epibox)
 
-2. **Creates regex patterns** - Each box type has a pattern to find it in LaTeX files
+2. **Queries files** - Uses Dataview to find all files in your latex folder
 
-3. **Queries LaTeX files** - Uses Dataview to find all `.tex` files in your specified folder
+3. **Extracts content** - Uses regex to find and extract content from each box type
 
-4. **Extracts content** - For each file, searches for all box types and extracts:
-   - Title (from the optional argument like `[title=Question: 123]`)
-   - Body text (the content inside the environment)
+4. **Displays results** - Creates tables grouped by box type, with clickable links to source files
 
-5. **Displays results** - Creates a table grouped by box type, showing title, preview, and link to the file
+---
 
-In short: It scans your LaTeX files and builds an index of all your epistemic boxes so you can browse them in Obsidian.
+## The Script
 
-## Option 1: DataviewJS Script
+Create a new note (e.g., `epibox-index.md`) and add this code:
 
-Create a new note in Obsidian and add this inline DataviewJS code:
-
-````javascript
+````markdown
 ```dataviewjs
 const boxTypes = [
-  { name: "known", color: "🟢", label: "Known" },
-  { name: "unclear", color: "🟠", label: "Unclear" },
-  { name: "question", color: "🔴", label: "Question" },
-  { name: "claim", color: "🔵", label: "Claim" },
-  { name: "pitfall", color: "🟣", label: "Pitfall" },
-  { name: "epibox", color: "⚫", label: "Note" }
+  { name: "known", label: "Known" },
+  { name: "question", label: "Question" },
+  { name: "claim", label: "Claim" },
+  { name: "pitfall", label: "Pitfall" },
+  { name: "epibox", label: "Note" }
 ];
-
-const patterns = {
-  known: /\\begin{known}(?:\[([^\]]*)\])?([\s\S]*?)\\end{known}/g,
-  unclear: /\\begin{unclear}(?:\[([^\]]*)\])?([\s\S]*?)\\end{unclear}/g,
-  question: /\\begin{question}(?:\[([^\]]*)\])?([\s\S]*?)\\end{question}/g,
-  claim: /\\begin{claim}\{([^}]*)\}(?:\[([^\]]*)\])?([\s\S]*?)\\end{claim}/g,
-  pitfall: /\\begin{pitfall}(?:\[([^\]]*)\])?([\s\S]*?)\\end{pitfall}/g,
-  epibox: /\\begin{epibox}(?:\[([^\]]*)\])?([\s\S]*?)\\end{epibox}/g
-};
 
 const results = {};
 boxTypes.forEach(b => results[b.name] = []);
 
-const files = dv.pages('"path/to/your/latex/notes"');
-for (const file of files) {
-  const content = await app.vault.read(file.file);
-  for (const box of boxTypes) {
-    const regex = new RegExp(patterns[box.name].source, 'g');
-    let match;
-    while ((match = regex.exec(content)) !== null) {
-      const title = match[1]?.trim() || (box.name === "claim" ? match[1] : "");
-      const body = match[match.length-1].trim().replace(/\\item/g, '').replace(/\\/g, '').substring(0, 150);
-      results[box.name].push({ file: file.file.name, path: file.file.path, title, body });
+// Get all pages and filter to latex folder
+const allPages = dv.pages();
+const files = allPages.where(p => p.file.path.includes("latex"));
+
+for (let f of files) {
+  const content = await dv.io.load(f.file.path);
+  
+  for (let box of boxTypes) {
+    // Regex to match from \begin{box} to \end{box}
+    const regex = new RegExp("\\\\begin\\{" + box.name + "\\}([\\s\\S]*?)\\\\end\\{" + box.name + "\\}", "g");
+    const matches = content.match(regex);
+    
+    if (matches) {
+      for (let match of matches) {
+        // Extract body between \begin{...} and \end{...}
+        const body = match
+          .replace(/\\begin\{[^}]+\}/g, "")
+          .replace(/\\end\{[^}]+\}/g, "")
+          .trim()
+          .substring(0, 100);
+        
+        results[box.name].push({ file: f.file.name, title: box.label, body: body });
+      }
     }
   }
 }
 
-for (const box of boxTypes) {
+for (let box of boxTypes) {
   if (results[box.name].length > 0) {
-    dv.heading(3, `${box.color} ${box.label}`);
+    dv.paragraph("### " + box.label);
     dv.table(["Title", "Note", "File"], 
-      results[box.name].map(r => [
-        r.title || box.label, 
-        r.body, 
-        `[[${r.file}]]`
-      ])
+      results[box.name].map(r => [r.title, r.body, `[[${r.file}]]`])
     );
   }
 }
 ```
 ````
 
-## Option 2: Simple Dataview Query
+## File Structure
 
-If you just want to link to your LaTeX files:
-
-````dataview
-TABLE WITHOUT ID
-  file.link as "LaTeX Notes",
-  dateformat(file.mday, "yyyy-MM-dd") as "Modified"
-FROM "path/to/your/latex/notes"
-SORT file.mday DESC
-````
-
-## Option 3: Obsidian Shell Commands
-
-Add a shell command to compile LaTeX and auto-refresh:
-
-1. Install [Obsidian Shell Commands](https://github.com/Taitava/obsidian-shell-commands)
-2. Create command:
-   - Name: "Compile LaTeX"
-   - Command: `cd /path/to/latex && pdflatex -interaction=nonstopmode %.tex`
-
-## File Structure Example
+Your vault should look like:
 
 ```
 obsidian-vault/
-├── latex/           # Symlink or folder for .tex files
-│   ├── notes/
-│   │   ├── math.tex
-│   │   ├── physics.tex
-│   └── index.md     # Dataview script here
+├── latex/
+│   ├── math.md
+│   └── physics.md
+└── epibox-index.md   ← The script goes here
 ```
+
+## Usage
+
+1. Create a `latex` folder in your vault
+2. Add LaTeX files with epibox environments:
+
+```latex
+\begin{known}
+Euler's identity: $e^{i\pi} + 1 = 0$
+\end{known}
+
+\begin{question}
+What is the Riemann Hypothesis?
+\end{question}
+
+\begin{claim}{P vs NP}
+Is P equal to NP?
+\end{claim}
+
+\begin{pitfall}
+Do not confuse correlation with causation.
+\end{pitfall}
+```
+
+3. Open `epibox-index.md` - it will show all boxes in tables!
 
 ## Zettelkasten Integration
 
 For timestamp-based linking:
 
 ```latex
-\begin{question}[title=Question: 202602281530]
-    What is the Riemann hypothesis?
+\begin{question}
+What is the Riemann hypothesis?
 \end{question}
 ```
 
-Use the timestamp `202602281530` to create links between notes:
-- `[[202602281530]]` - Links to that specific question
-- In Obsidian: create note named `202602281530.md` for detailed answers
+Use the question content to create links between notes in Obsidian.

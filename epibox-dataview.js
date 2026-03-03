@@ -2,64 +2,49 @@
 // DataviewJS script for Obsidian
 // Place this in a .md file in your Obsidian vault to list all epibox environments
 
-const latexFolder = "latex/"; // Adjust to your LaTeX files folder
-
 const boxTypes = [
-  { name: "known", color: "green", icon: "✓" },
-  { name: "unclear", color: "orange", icon: "?" },
-  { name: "question", color: "red", icon: "❓" },
-  { name: "claim", color: "blue", icon: "💡" },
-  { name: "pitfall", color: "purple", icon: "⚠" },
-  { name: "epibox", color: "gray", icon: "📝" }
+  { name: "known", label: "Known" },
+  { name: "question", label: "Question" },
+  { name: "claim", label: "Claim" },
+  { name: "pitfall", label: "Pitfall" },
+  { name: "epibox", label: "Note" }
 ];
 
-// Regex patterns for each box type
-const patterns = {
-  known: /\\begin{known}(?:\[([^\]]*)\])?([\s\S]*?)\\end{known}/g,
-  unclear: /\\begin{unclear}(?:\[([^\]]*)\])?([\s\S]*?)\\end{unclear}/g,
-  question: /\\begin{question}(?:\[([^\]]*)\])?([\s\S]*?)\\end{question}/g,
-  claim: /\\begin{claim}\{([^}]*)\}(?:\[([^\]]*)\])?([\s\S]*?)\\end{claim}/g,
-  pitfall: /\\begin{pitfall}(?:\[([^\]]*)\])?([\s\S]*?)\\end{pitfall}/g,
-  epibox: /\\begin{epibox}(?:\[([^\]]*)\])?([\s\S]*?)\\end{epibox}/g
-};
+const results = {};
+boxTypes.forEach(b => results[b.name] = []);
 
-const results = { known: [], unclear: [], question: [], claim: [], pitfall: [], epibox: [] };
+// Get all pages and filter to latex folder
+const allPages = dv.pages();
+const files = allPages.where(p => p.file.path.includes("latex"));
 
-// Query all LaTeX files
-const files = dv.pages(`"${latexFolder}"`).where(p => p.file.name.endsWith(".tex"));
-
-for (const file of files) {
-  const content = await app.vault.read(file.file);
+for (let f of files) {
+  const content = await dv.io.load(f.file.path);
   
-  // Extract all types
-  for (const [type, pattern] of Object.entries(patterns)) {
-    const regex = new RegExp(pattern.source, 'g');
-    let match;
-    while ((match = regex.exec(content)) !== null) {
-      const title = match[1] || "";
-      const claimTitle = match[1] || "";
-      const body = match[match.length - 1].trim().substring(0, 200);
-      
-      results[type].push({
-        file: file.file.name,
-        path: file.file.path,
-        title: type === "claim" ? claimTitle : title,
-        body: body.replace(/\\item/g, '').replace(/\\/g, '').trim()
-      });
+  for (let box of boxTypes) {
+    // Regex to match from \begin{box} to \end{box}
+    const regex = new RegExp("\\\\begin\\{" + box.name + "\\}([\\s\\S]*?)\\\\end\\{" + box.name + "\\}", "g");
+    const matches = content.match(regex);
+    
+    if (matches) {
+      for (let match of matches) {
+        // Extract body between \begin{...} and \end{...}
+        const body = match
+          .replace(/\\begin\{[^}]+\}/g, "")
+          .replace(/\\end\{[^}]+\}/g, "")
+          .trim()
+          .substring(0, 100);
+        
+        results[box.name].push({ file: f.file.name, title: box.label, body: body });
+      }
     }
   }
 }
 
-// Display results by type
-for (const box of boxTypes) {
+for (let box of boxTypes) {
   if (results[box.name].length > 0) {
-    dv.heading(2, `${box.icon} ${box.name.charAt(0).toUpperCase() + box.name.slice(1)}`);
-    
-    const tableData = results[box.name].map(b => [
-      `[${b.title || box.name}](${b.path})`,
-      b.body.substring(0, 100) + (b.body.length > 100 ? "..." : "")
-    ]);
-    
-    dv.table(["Title", "Preview"], tableData);
+    dv.paragraph("### " + box.label);
+    dv.table(["Title", "Note", "File"], 
+      results[box.name].map(r => [r.title, r.body, `[[${r.file}]]`])
+    );
   }
 }
