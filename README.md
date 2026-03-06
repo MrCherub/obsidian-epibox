@@ -1,6 +1,13 @@
 # epibox Obsidian Integration
 
-This script scans your LaTeX files and displays all epibox environments in Obsidian.
+This project scans your LaTeX files and displays all epibox environments in Obsidian.
+
+There are two files to know about:
+
+- `epibox-dataview.js`: the source DataviewJS logic in plain JavaScript
+- `epibox-index.md`: a vault-ready note template that wraps the script in a ````dataviewjs```` block
+
+Obsidian runs the `.md` note, not the standalone `.js` file. The `.js` file exists so the script is easier to version, read, and reuse outside your vault.
 
 ## Quick Test - Is DataviewJS Working?
 
@@ -36,7 +43,12 @@ If not:
 
 ## The Script
 
-Create a new note (e.g., `epibox-index.md`) and add this code:
+Fastest path:
+
+1. Copy `epibox-index.md` from this repo into your vault root
+2. Open it in Obsidian
+
+If you want to embed the script manually, create a new note (for example `epibox-index.md`) and add this code:
 
 ````markdown
 ```dataviewjs
@@ -112,6 +124,7 @@ obsidian-vault/
 │   ├── math.md
 │   ├── physics.md
 │   └── philosophy.md
+├── zettels/
 └── epibox-index.md   ← The script goes here
 ```
 
@@ -122,18 +135,22 @@ obsidian-vault/
 
 ```latex
 \begin{known}
+[id=202603031005][title=Known]
 Euler's identity: $e^{i\pi} + 1 = 0$
 \end{known}
 
 \begin{question}[title=Question: 202603031000]
+[id=202603031000]
 What is the Riemann Hypothesis?
 \end{question}
 
 \begin{claim}{Church-Turing Thesis}
+[id=202603031010]
 Every effectively calculable function is computable by a Turing machine.
 \end{claim}
 
 \begin{pitfall}
+[id=202603031020][title=Pitfall]
 Do not confuse correlation with causation.
 \end{pitfall}
 ```
@@ -142,12 +159,26 @@ Do not confuse correlation with causation.
 
 ## Zettelkasten Integration
 
-Use timestamps in questions for Zettelkasten:
+Use timestamp IDs consistently across both Epibox and Obsidian zettels.
 
 ```latex
 \begin{question}[title=Question: 202603031000]
+[id=202603031000]
 What is the Riemann hypothesis?
 \end{question}
 ```
 
-The timestamp enables unique identification for linking notes.
+```markdown
+---
+zettel_id: 202603031000
+aliases: []
+tags:
+  - zettel
+epibox_id: 202603031000
+epibox_type: question
+---
+
+# Riemann Hypothesis
+```
+
+The Dataview index matches Epibox `id` values to zettel `zettel_id` values and shows the linked zettel in the table.
