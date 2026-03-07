@@ -1,5 +1,6 @@
 
-<img width="1449" height="1029" alt="Screenshot 2026-03-07 at 12 40 57 AM" src="https://github.com/user-attachments/assets/4aa406f1-7f2f-49c3-bca6-eea302e5ad74" />
+<img width="1449" height="1029" alt="Screenshot 2026-03-07 at 1 20 37 AM" src="https://github.com/user-attachments/assets/f63b94e3-cd0e-4325-9d65-cffbd5cbb320" />
+
 # epibox Obsidian Integration
 
 Turn LaTeX `epibox` environments into an Obsidian dashboard powered by DataviewJS.
