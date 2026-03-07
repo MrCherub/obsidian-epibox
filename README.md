@@ -22,6 +22,24 @@ This repo contains:
 
 The result is a dashboard rather than a raw parser dump.
 
+## How It Connects To Neovim
+
+This workflow is designed to pair with a Neovim setup that creates zettels from the editor instead of manually renaming files in Obsidian.
+
+On the Neovim side:
+
+- TeX snippets generate Epibox blocks with timestamp-based `[id=...]` values
+- `:ZettelNew` creates a plain zettel with a human-readable slug filename and a `zettel_id` in frontmatter
+- `:ZettelHub` creates a hub zettel where `epibox_id` matches the note's own `zettel_id`
+- `:ZettelLink` creates a zettel linked to an existing Epibox ID and type
+
+That means the system keeps two things separate on purpose:
+
+- readable filenames for Obsidian graph labels
+- stable timestamp IDs for Dataview matching and LaTeX-to-zettel references
+
+So the Obsidian dashboard is not a standalone gimmick. It is the other half of a Neovim-to-Obsidian note pipeline.
+
 ## Requirements
 
 1. Obsidian
@@ -121,13 +139,15 @@ epibox_type: question
 1. Copy `epibox-index.md` into your vault root.
 2. Create a `latex/` folder and add notes using the example syntax.
 3. Create a `zettels/` folder and add notes with `zettel_id` frontmatter.
-4. Open `epibox-index.md` in Obsidian.
+4. If you use Neovim, create zettels through `:ZettelNew`, `:ZettelHub`, or `:ZettelLink` so filenames stay readable while IDs remain stable.
+5. Open `epibox-index.md` in Obsidian.
 
 ## Notes
 
 - The dashboard matches Epibox `id` values to zettel `zettel_id` values.
 - Obsidian graph connections still require real wikilinks; metadata matching alone does not create graph edges.
-- Timestamp IDs are intentionally kept visible because they are the canonical bridge between LaTeX blocks and zettels.
+- Timestamp IDs are intentionally kept in metadata because they are the canonical bridge between LaTeX blocks and zettels.
+- Human-readable filenames and aliases make the graph usable; IDs keep the pipeline reliable.
 
 ## Why IDs Matter
 
