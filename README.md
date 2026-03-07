@@ -1,5 +1,4 @@
-
-<img width="1449" height="1029" alt="Screenshot 2026-03-07 at 1 20 37 AM" src="https://github.com/user-attachments/assets/f63b94e3-cd0e-4325-9d65-cffbd5cbb320" />
+<img width="1449" height="1029" alt="Screenshot 2026-03-07 at 4 19 01 AM" src="https://github.com/user-attachments/assets/79c2e46d-1064-47f7-acf6-675b884dcdc8" />
 
 # epibox Obsidian Integration
 
