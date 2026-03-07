@@ -129,6 +129,22 @@ epibox_type: question
 - Obsidian graph connections still require real wikilinks; metadata matching alone does not create graph edges.
 - Timestamp IDs are intentionally kept visible because they are the canonical bridge between LaTeX blocks and zettels.
 
+## Why IDs Matter
+
+This project uses two different connection mechanisms on purpose:
+
+- `zettel_id` / Epibox `id`: machine-facing canonical identifiers
+- `[[wikilinks]]`: human-facing navigation and graph edges
+
+If you only used Obsidian markdown, wikilinks alone could be enough. But this project bridges LaTeX Epibox blocks and Obsidian notes, so stable IDs matter.
+
+The practical split is:
+
+- IDs let Dataview match a LaTeX source block to a zettel even if note titles change
+- Wikilinks make notes navigable in Obsidian and create graph edges
+
+So the IDs are not replacing wikilinks. They are the durable key that makes the LaTeX-to-Obsidian connection reliable.
+
 ## Screenshot
 
 I can add the rendered screenshot to this README too, but I still need the image as a local file in the repo.
