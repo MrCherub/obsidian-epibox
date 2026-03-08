@@ -31,9 +31,10 @@ This workflow is designed to pair with a Neovim setup that creates zettels from 
 On the Neovim side:
 
 - TeX snippets generate Epibox blocks with timestamp-based `[id=...]` values
-- `:ZettelNew` creates a plain zettel with a human-readable slug filename and a `zettel_id` in frontmatter
-- `:ZettelHub` creates a hub zettel where `epibox_id` matches the note's own `zettel_id`
-- `:ZettelLink` creates a zettel linked to an existing Epibox ID and type
+- `:ZettelNew` or `<leader>zn` creates a plain zettel with a human-readable slug filename and a `zettel_id` in frontmatter
+- `:ZettelHub` or `<leader>zh` creates a hub zettel where `epibox_id` matches the note's own `zettel_id`
+- `:ZettelLink` or `<leader>zl` creates a zettel linked to an existing Epibox ID and type
+- `:ZettelBranch` or `<leader>zb` creates a branch note from the current hub, inherits topical tags, links back to the hub, and updates the hub's `## Branch Notes` section automatically
 
 That means the system keeps two things separate on purpose:
 
@@ -135,6 +136,17 @@ epibox_type: question
 - `Missing ID` table
 - `All Entries` table
 - conditional `Zettel` column only when linked notes exist
+
+## Neovim Workflow
+
+A practical editor flow looks like this:
+
+1. Capture a question or note in LaTeX with an Epibox snippet so it gets an `[id=...]`.
+2. Use `:ZettelHub` to create the main zettel for that Epibox idea with a readable filename and matching metadata.
+3. Open that hub later and use `:ZettelBranch` to grow subnotes without manually wiring the graph.
+4. Let `epibox-index.md` show which Epibox entries have connected zettels and which still need work.
+
+This keeps note creation fast in Neovim while preserving enough structure for Dataview and the Obsidian graph.
 
 ## Setup
 
